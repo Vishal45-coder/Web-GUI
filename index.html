@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <style>
+            #svg {
+                position: absolute;
+                pointer-events: none;
+                width: 100%;
+                height: 100%;
+            }
+            #sidebar {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 200px;
+    height: 100%;
+    border: 1px solid black;
+    padding: 20px;
+    display: none;
+}
+        </style>
+    </head>
+    <body>
+        <svg id="svg"></svg>
+        <button id="grid">Grid</button>
+        <button id="pump">Pump</button>
+        <button id="junction">Junction</button>
+        <button id="valve">Valve</button>
+        <button id="sink">Sink</button>
+        <button id="pipe">Pipe</button>
+        <button id="connect">Connect</button>
+        <button id="run">Run</button>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <script>
+            var lines = [];
+            let lineStart = null;
+            let line = null;
+            let connectMode = false;
+            document.getElementById('connect').onclick = function() {
+                connectMode = !connectMode;
+            };
+
+            function createShapeWithText(text, width, height, borderRadius) {
+        // Create a new div element
+            var div = $('<div>').text(text)
+                .css({
+                    width: width,
+                    height: height,
+                    border: '1px solid black',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    borderRadius: borderRadius,
+                    position: 'relative'  // Add this to position the dot relative to the div
+                })
+            .draggable({  // Make the div draggable
+                drag: function() {
+                    // When the div is dragged, update all lines connected to it
+                    var divCenter = { x: div.offset().left + div.width() / 2, y: div.offset().top + div.height() / 2 };
+                    lines.forEach(function(line) {
+                        if (line.startElement === div) {
+                            line.line.setAttribute('x1', divCenter.x);
+                            line.line.setAttribute('y1', divCenter.y);
+                        } else if (line.endElement === div) {
+                            line.line.setAttribute('x2', divCenter.x);
+                            line.line.setAttribute('y2', divCenter.y);
+                        }
+                    });
+                }
+            })
+            // .resizable()  // Make the div resizable
+            .appendTo('body');  // Append the div to the body
+
+                // Create a small dot
+                var dot = $('<div>')
+                    .css({
+                        width: '10px',
+                        height: '10px',
+                        borderRadius: '50%',
+                        background: 'transparent',  // Make the dot transparent
+                        border: '1px solid black',  // Add a border so the dot is still visible
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)'
+                    })
+                    .appendTo(div);
+
+                    div.click(function(event) {
+                        event.stopPropagation();
+                        if (connectMode) {
+                            if (lineStart) {
+                                var line = drawLine(lineStart, { x: div.offset().left + div.width() / 2, y: div.offset().top + div.height() / 2 });
+                                lines.push({ startElement: lineStartElement, endElement: div, line: line });
+                                lineStart = null;
+                                lineStartElement = null;
+                            } else {
+                                lineStart = { x: div.offset().left + div.width() / 2, y: div.offset().top + div.height() / 2 };
+                                lineStartElement = div;
+                            }
+                        }
+                    });
+                    div.dblclick(function() {
+                    // Ask for the values
+                    var length = prompt("Enter length");
+                    var diameter = prompt("Enter diameter");
+                    var roughness = prompt("Enter roughness");
+                    var height_ab = prompt("Enter height_ab");
+
+                    // Set the div's text to the entered values
+                    // div.text('Pipe (pipe1)\nlength = ' + length + '\ndiameter = ' + diameter + '\nroughness = ' + roughness + '\nheight_ab = ' + height_ab);
+                });
+
+                return div;
+            }
+
+            document.getElementById('grid').onclick = function() {
+                createShapeWithText('Grid', '100px', '100px', '0');
+            };
+
+            document.getElementById('pump').onclick = function() {
+                createShapeWithText('Pump', '100px', '100px', '0');
+            };
+            document.getElementById('junction').onclick = function() {
+                createShapeWithText('Junction', '50px', '50px', '50%');
+            };
+        
+            document.getElementById('valve').onclick = function() {
+                createShapeWithText('Valve', '100px', '100px', '0');
+            };
+        
+            document.getElementById('sink').onclick = function() {
+                createShapeWithText('Sink', '100px', '100px', '0');
+            };
+            document.getElementById('pipe').onclick = function() {
+                createShapeWithText('Pipe', '100px', '15px', '0');
+            };
+
+            document.getElementById('run').onclick = function() {
+                console.log('Run button clicked');
+                // Add your code here
+            };
+
+            function drawLine(point1, point2) {
+                var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', point1.x);
+                line.setAttribute('y1', point1.y);
+                line.setAttribute('x2', point2.x);
+                line.setAttribute('y2', point2.y);
+                line.setAttribute('stroke', 'black');
+                document.getElementById('svg').appendChild(line);
+                return line;
+            }
+        </script>
+    </body>
+</html>
